@@ -1,0 +1,9 @@
+Routers: 
+[
+    {
+        "ipv6": "fe80::2acd:d217:bf7b:3ddb",
+        "mac": "50:2f:9b:c3:28:0f"
+    }
+],
+Neghbour_Devices: 
+[]
