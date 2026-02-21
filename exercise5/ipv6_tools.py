@@ -30,10 +30,10 @@ def ns_req(ip_addr):
     return neighbours
 
 
-def hops_mapping_v6(ip_addr, ttl: int):     
+def hops_mapping_v6(ip_addr, hlim: int):     
 
     route_nodes = []
-    for hop in range(0, ttl):
+    for hop in range(0, hlim):
         
         eth = Ether()
         ipv6 = IPv6(dst=ip_addr, hlim=hop)
@@ -57,14 +57,12 @@ def hops_mapping_v6(ip_addr, ttl: int):
                                 ])
     return route_nodes
 
-TEST_IPv6 = 'fe80::f0cb:7eff:fead:b02c'
-
-#nodes = hops_mapping('fe80::f0cb:7eff:fead:b02c', 4)
-#for node in nodes:
-#    print(f"{node}")
+TEST_IPv6 = 'fe80::f0cb:7eff:fead:f023'
+TEST = 'fe80::146d:7487:a64c:ls34'
 
 try:
-    neighbours = ns_req(TEST_IPv6)
+    print(len(hops_mapping_v6(TEST, 5)))
+    neighbours = ns_req(TEST_IPv6, 10)
     with open('./neighbours.json', 'w') as f:
         json.dump(neighbours, f, indent=4)
 except Exception as e:

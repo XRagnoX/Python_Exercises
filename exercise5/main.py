@@ -42,7 +42,7 @@ def ping_ipv6(destination: str, scope: str) -> list:
     
     # IPv6 packet
     ip = IPv6(dst=ip_addr)
-    er = ICMPv6EchoRequest()
+    er = ICMPv6EchoRequest()aw
 
     packet = Ether() / ip / er
     
@@ -61,7 +61,7 @@ def ping_ipv6(destination: str, scope: str) -> list:
     return ping_responses
 
 
-def ipv6_ns(mac_addr, ip_addr):
+def ipv6_ns(mac_addr=ETH_BROADCAST, ip_addr=LINK_LOCAL_MULTICAST):
     
     eth = Ether(dst=f"{mac_addr}")
     ip = IPv6(dst=f"{ip_addr}")
@@ -86,12 +86,12 @@ def ipv6_ns(mac_addr, ip_addr):
 def ns_request():
     # send a neighbour solicitation type 135
 
-    eth = Ether(dst=ETHER_BROADCAST)
-    ipv6 = IPv6(dst=LINK_LOCAL_MULTICAST, hlim=64)
+    eth = Ether(dst=ETH_BROADCAST)
+    ipv6 = IPv6(dst=f"{LINK_LOCAL_MULTICAST}%wlan0", hlim=64)
     
     ns = ICMPv6ND_NS()
     
-    packet = eth / ipv6 / ns
+    packet = Ether() / ipv6 / ns
     
     ans, unans = srp(packet, timeout=2, verbose=False)
     
@@ -118,11 +118,13 @@ def ns_request():
 def rs_request():
     # router solicitation type 133
     
-    eth = Ether(dst=ETHER_BROADCAST)
-    ipv6 = IPv6(dst=LINK_LOCAL_MULTICAST, hlim=64)
+    eth = Ether(dst=ETH_BROADCAST)
+    ipv6 = IPv6(dst=f"{LINK_LOCAL_MULTICAST}%wlan0", hlim=64)
 
     rs = ICMPv6ND_RS()
     
+    packet = Ether() / ipv6 / rs
+
     print("Inviando richiesta multicast RS...")
     ans, unans = srp(packet, timeout=2, verbose=False)
 
@@ -169,7 +171,7 @@ def test_function():
     # Esempio per una classica sottorete casalinga
     risultati = scan_network("192.168.1.0/24")
 
-    with open("dispositivi_rete.json", "w") as f:
+    with open("./logger/logs/dispositivi_rete.json", "w") as f:
         json.dump(risultati, f, indent=4)
 
     print(f"Trovati {len(risultati)} dispositivi su Ip_v4")
@@ -182,9 +184,9 @@ def test_function():
 
     responses = scan_ipv6_local()
 
-    with open("dispositivi_rete_ipv6.json", "w") as f:
+    with open("./logger/logs/dispositivi_rete_ipv6.json", "w") as f:
         f.write("Routers: \n")
-    with open("dispositivi_rete_ipv6.json", "a") as f:
+    with open("./logger/logs/dispositivi_rete_ipv6.json", "a") as f:
         json.dump(routers, f, indent= 4)
         f.write(",\nNeghbour_Devices: \n")
         json.dump(neighbours, f, indent=4)
@@ -193,20 +195,51 @@ def test_function():
     print(f"{len(neighbours)} dispositivi Neighbours Trovati nella sottorete")
 
 
+def print_opt():
+    print("Help Table: ")
+    print("1. IPv4 ARP Request")
+    print("2. Scan Neighbour")
+    print("3. Scan Routers")
+    print("4. ICMPv6 Echo Request")
+    print("5. Help Table")
+    print("6. Gracefull Exit.")
+
+
 def main():
     
     while True:
         opt = input("Option: ")
         if opt == "1":
             print("1. IPv4 ARP Request")
+            results = scan_network('192.168.1.0/24')
+            with open('./logger/logs/dispositivi_rete.json', 'w') as f:
+                json.dump(results, f, indent=4)
         elif opt == "2":
             print("2. Scan Neighbour")
+            results = ns_request()
+            if results is not None:
+                print(f"Found {len(results)} IPv6 Neighbours")
+                with open('./logger/logs/dispositivi_rete_ipv6.json', 'w') as f:
+                    f.write(f"ipv6_devices: ")
+                    json.dump(results, f, indent=4)
+            else:
+                print(f"No devices found")
         elif opt == "3":
             print("3. Scan Routers")
+            results = rs_request()
+            if results is not None:
+                print(f"Found {len(results)} IPv6 Routers")
+                with open('./logger/logs/dispositivi_rete_ipv6.json', 'w') as f:
+                    f.write(f"routers_ipv6: ")
+                    json.dump(results, f, indent=4)
+            else:
+                print(f"No devices found")
         elif opt == "4":
             print("4. ICMPv6 Echo Request")
+            dst = input("IPv6: ")
+            ping_ipv6("", "wlan0")
         elif opt == "5" or opt == "-h" or opt == "--help":
-            print("Help Table")
+            print_opt()
         elif opt == "6" or opt == "-q":
             print("Gracefull Exit.")
             return 

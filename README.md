@@ -1,2 +1,6 @@
-# Python_Exercises
+# Python Exercises
 Some exercises with python
+
+# Requirements
+scapy
+

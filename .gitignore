@@ -1,2 +1,10 @@
-exercise1/__pycache_
-exercise1/__pychache__/*
+# Created by venv; see https://docs.python.org/3/library/venv.html
+lib/
+lib64
+bin/
+share/
+pyvenv.cfg
+
+exercise1/__pycache__
+
+logs_convertiti.json
